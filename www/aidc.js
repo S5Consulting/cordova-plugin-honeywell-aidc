@@ -17,10 +17,10 @@ var Aidc = function() {
 	};
 };
 
-Aidc.prototype._success = function (code) {
+Aidc.prototype._success = function (barcode) {
 	console.log('Aidc._success');
 	
-	cordova.fireWindowEvent('barcode', { code: code });
+	cordova.fireWindowEvent('barcode', { barcode: barcode });
 };
 
 Aidc.prototype._error = function () {

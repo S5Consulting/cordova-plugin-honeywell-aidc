@@ -8,6 +8,7 @@ import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.honeywell.aidc.AidcManager;
 import com.honeywell.aidc.AidcManager.CreatedCallback;
@@ -25,7 +26,7 @@ public class Aidc extends CordovaPlugin implements BarcodeListener {
 
 	private BarcodeReader barcodeReader;
 	private AidcManager manager;
-	
+
 	private CallbackContext currentCallbackContext = null;
 
 	@Override
@@ -41,7 +42,7 @@ public class Aidc extends CordovaPlugin implements BarcodeListener {
 					if (barcodeReader != null) {
 						// register bar code event listener
 						// barcodeReader.addBarcodeListener(this);
-						
+
 						barcodeReader.addBarcodeListener(Aidc.this);
 
 						// Map<String, Object> asdfsadf =
@@ -126,7 +127,7 @@ public class Aidc extends CordovaPlugin implements BarcodeListener {
 			return true;
 		} else if ("callback".equals(action)) {
 			currentCallbackContext = callbackContext;
-			
+
 			PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
 			result.setKeepCallback(true);
 			callbackContext.sendPluginResult(result);
@@ -157,9 +158,17 @@ public class Aidc extends CordovaPlugin implements BarcodeListener {
 	@Override
 	public void onBarcodeEvent(BarcodeReadEvent arg0) {
 		Log.d("chromium", arg0.getBarcodeData());
-		
-		if (currentCallbackContext != null)
-		{
+
+		if (currentCallbackContext != null) {
+			// JSONObject obj = new JSONObject();
+			// obj.put("data", arg0.getBarcodeData());
+			// obj.put("code", arg0.getCodeId());
+			// obj.put("charset", arg0.getCharset().name());
+			// obj.put("aim", arg0.getAimId());
+			// obj.put("time", arg0.getTimestamp());
+
+			// Log.d("chromium", obj.toString());
+
 			PluginResult result = new PluginResult(PluginResult.Status.OK, arg0.getBarcodeData());
 			result.setKeepCallback(true);
 			currentCallbackContext.sendPluginResult(result);
@@ -169,9 +178,8 @@ public class Aidc extends CordovaPlugin implements BarcodeListener {
 	@Override
 	public void onFailureEvent(BarcodeFailureEvent arg0) {
 		Log.d("chromium", "No data");
-		
-		if (currentCallbackContext != null)
-		{
+
+		if (currentCallbackContext != null) {
 			PluginResult result = new PluginResult(PluginResult.Status.ERROR, "No data");
 			result.setKeepCallback(true);
 			currentCallbackContext.sendPluginResult(result);
