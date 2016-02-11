@@ -24,6 +24,8 @@ import android.widget.Toast;
 
 public class Aidc extends CordovaPlugin implements BarcodeListener {
 
+	private static String TAG = Aidc.class.getName();
+
 	private BarcodeReader barcodeReader;
 	private AidcManager manager;
 
@@ -40,8 +42,6 @@ public class Aidc extends CordovaPlugin implements BarcodeListener {
 					barcodeReader = manager.createBarcodeReader();
 
 					if (barcodeReader != null) {
-						// register bar code event listener
-						// barcodeReader.addBarcodeListener(this);
 
 						barcodeReader.addBarcodeListener(Aidc.this);
 
@@ -51,21 +51,11 @@ public class Aidc extends CordovaPlugin implements BarcodeListener {
 						// Log.d("chromium", key + "=" + asdfsadf.get(key));
 						// }
 
-						// try {
-						// Log.d("chromium", "" + barcodeReader
-						// .getBooleanProperty(BarcodeReader.PROPERTY_DATA_PROCESSOR_LAUNCH_BROWSER));
-						// } catch (UnsupportedPropertyException e1) {
-						// // TODO Auto-generated catch block
-						// e1.printStackTrace();
-						// }
-
-						// set the trigger mode to client control
+						// set the trigger mode to auto control
 						try {
-							barcodeReader.setProperty(BarcodeReader.PROPERTY_TRIGGER_CONTROL_MODE,
-									BarcodeReader.TRIGGER_CONTROL_MODE_AUTO_CONTROL);
+							barcodeReader.setProperty(BarcodeReader.PROPERTY_TRIGGER_CONTROL_MODE, BarcodeReader.TRIGGER_CONTROL_MODE_AUTO_CONTROL);
 						} catch (UnsupportedPropertyException e) {
-							Toast.makeText(Aidc.this.cordova.getActivity(), "Failed to apply properties",
-									Toast.LENGTH_SHORT).show();
+							Toast.makeText(Aidc.this.cordova.getActivity(), "Failed to apply properties", Toast.LENGTH_SHORT).show();
 						}
 
 						Map<String, Object> properties = new HashMap<String, Object>();
@@ -82,7 +72,7 @@ public class Aidc extends CordovaPlugin implements BarcodeListener {
 						properties.put(BarcodeReader.PROPERTY_INTERLEAVED_25_ENABLED, false);
 						properties.put(BarcodeReader.PROPERTY_PDF_417_ENABLED, false);
 						// Set Max Code 39 barcode length
-						properties.put(BarcodeReader.PROPERTY_CODE_39_MAXIMUM_LENGTH, 10);
+						properties.put(BarcodeReader.PROPERTY_CODE_39_MAXIMUM_LENGTH, 48);
 						// Turn on center decoding
 						properties.put(BarcodeReader.PROPERTY_CENTER_DECODE, true);
 						// Disable bad read response, handle in onFailureEvent
@@ -125,12 +115,42 @@ public class Aidc extends CordovaPlugin implements BarcodeListener {
 			}
 
 			return true;
-		} else if ("callback".equals(action)) {
+		} else if ("register".equals(action)) {
 			currentCallbackContext = callbackContext;
 
 			PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
 			result.setKeepCallback(true);
 			callbackContext.sendPluginResult(result);
+
+			return true;
+		} else if ("unregister".equals(action)) {
+			currentCallbackContext = null;
+
+			return true;
+		} else if ("enableTrigger".equals(action)) {
+			Log.d(TAG, "enableTrigger");
+
+			try {
+				barcodeReader.setProperty(BarcodeReader.PROPERTY_TRIGGER_CONTROL_MODE, BarcodeReader.TRIGGER_CONTROL_MODE_AUTO_CONTROL);
+
+				callbackContext.success();
+			} catch (UnsupportedPropertyException e) {
+				callbackContext.error(e.getMessage());
+			}
+
+			return true;
+		} else if ("disableTrigger".equals(action)) {
+			Log.d(TAG, "disableTrigger");
+
+			try {
+				barcodeReader.setProperty(BarcodeReader.PROPERTY_TRIGGER_CONTROL_MODE, BarcodeReader.TRIGGER_CONTROL_MODE_DISABLE);
+
+				callbackContext.success();
+			} catch (UnsupportedPropertyException e) {
+				callbackContext.error(e.getMessage());
+			}
+
+			callbackContext.success();
 
 			return true;
 		}
@@ -157,32 +177,38 @@ public class Aidc extends CordovaPlugin implements BarcodeListener {
 
 	@Override
 	public void onBarcodeEvent(BarcodeReadEvent arg0) {
-		Log.d("chromium", arg0.getBarcodeData());
+		Log.d(TAG, arg0.getBarcodeData());
 
 		if (currentCallbackContext != null) {
-			// JSONObject obj = new JSONObject();
-			// obj.put("data", arg0.getBarcodeData());
-			// obj.put("code", arg0.getCodeId());
-			// obj.put("charset", arg0.getCharset().name());
-			// obj.put("aim", arg0.getAimId());
-			// obj.put("time", arg0.getTimestamp());
+			try {
+				JSONObject obj = new JSONObject();
+				obj.put("success", true);
+				obj.put("data", arg0.getBarcodeData());
 
-			// Log.d("chromium", obj.toString());
-
-			PluginResult result = new PluginResult(PluginResult.Status.OK, arg0.getBarcodeData());
-			result.setKeepCallback(true);
-			currentCallbackContext.sendPluginResult(result);
+				PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
+				result.setKeepCallback(true);
+				currentCallbackContext.sendPluginResult(result);
+			} catch (Exception x) {
+				Log.e(TAG, x.getMessage());
+			}
 		}
 	}
 
 	@Override
 	public void onFailureEvent(BarcodeFailureEvent arg0) {
-		Log.d("chromium", "No data");
+		// Log.d(TAG, "No data");
 
 		if (currentCallbackContext != null) {
-			PluginResult result = new PluginResult(PluginResult.Status.ERROR, "No data");
-			result.setKeepCallback(true);
-			currentCallbackContext.sendPluginResult(result);
+			try {
+				JSONObject obj = new JSONObject();
+				obj.put("success", false);
+
+				PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
+				result.setKeepCallback(true);
+				currentCallbackContext.sendPluginResult(result);
+			} catch (Exception x) {
+				Log.e(TAG, x.getMessage());
+			}
 		}
 	}
 }
