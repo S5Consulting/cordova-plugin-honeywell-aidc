@@ -2,7 +2,7 @@
 
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" 
 	id="cordova-plugin-honeywell-aidc" 
-	version="0.0.2">
+	version="0.1.0">
 
 	<name>Honeywell AIDC Barcode Scanner</name>
 	<description>Honeywell TC50/D75E Barcode Scanner</description>
